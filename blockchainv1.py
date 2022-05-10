@@ -11,19 +11,16 @@ class Blockchain:
 
     # fonction qui crée un block
     def create_block(self, nonce, previous_hash):
-        # création des paramètres d'un block
         block = {
-                'index': len(self.chain) + 1,
+                'index': len(self.chain),
                 'timestamp': str(datetime.datetime.now()),
                 'nonce' : nonce,
                 'previous_hash' : previous_hash,
                 'transaction': self.current_transactions
                 }
 
-        # ajout des transactions
         self.current_transactions = []
         
-        # ajout du block a la blockchain
         self.chain.append(block)
 
         return block
@@ -40,37 +37,33 @@ class Blockchain:
     # fonction qui hash le block passé en paramètre
     def hash(self, block):
         # passe le block json en string pour pouvoir avoir le hash
-        hash_block = hashlib.sha256(json.dumps(block).encode('utf-8')).hexdigest()
+        hash_block = hashlib.sha256(json.dumps(block, sort_keys=True).encode('utf-8')).hexdigest()
         return hash_block
 
     # fonction utilisé pour le proof of work et pour miner le block
-    def mining(self, index):
+    def mining(self, index, previous_hash, transactions):
         nonce = 0
-        while self.valid_mining(index) is False:
+        while self.valid_mining(index, previous_hash, transactions, nonce) is False:
             nonce += 1
         return nonce
 
     # fonction qui valide le block
-    def valid_mining(self, index):
-        hashed_block = self.hash(self.chain[index-1])
+    def valid_mining(self, index, previous_hash, transactions, nonce):
+        content_block = f'{index}{previous_hash}{transactions}{nonce}'.encode()
+        hashed_block = hashlib.sha256(content_block).hexdigest()
         if hashed_block[:2] == '00':
             return True
         else:
             return False
 
     @property
-    # fonction qui retourne le block precédent
     def last_block(self):
-        # [-1] sur une liste retourne le dernier élément
         return self.chain[-1]
 
-    # fonction qui valide toute la blockchain
     def valid_blockchain(self, chain):
-        # on commence la validation au premier block
         previous_block = chain[0]
         block_index = 1
 
-        # iteration sur la blockchain
         while block_index < len(chain):
             block = chain[block_index]
             # si le previous hash du block de la boucle est different
@@ -98,7 +91,7 @@ class Blockchain:
 
         # on valide la blockchain si on a passé toutes les conditions
         return True
-
+        
 
 # crée le site web
 app = Flask(__name__)
@@ -118,7 +111,7 @@ def mine_block():
 
     previous_block_hash = blockchain.hash(blockchain.last_block)
     index = len(blockchain.chain)
-    nonce = blockchain.mining(index)
+    nonce = blockchain.mining(index, previous_block_hash, blockchain.current_transactions)
     block = blockchain.create_block(nonce, previous_block_hash)
     
     response = {'message': 'A block is MINED',
@@ -137,7 +130,7 @@ def display_chain():
     response = {'blockchain': blockchain.chain,
                 'length': len(blockchain.chain)}
     return jsonify(response), 200
- 
+
 # verifie la validité de la blockchain
 @app.route('/valid', methods=['GET'])
 def valid():
@@ -148,7 +141,7 @@ def valid():
     else:
         response = {'message': 'The Blockchain is not valid.'}
     return jsonify(response), 200
-
+ 
 # ajoute des transactions 
 @app.route('/transactions', methods=['GET'])
 def new_transactions():
@@ -161,7 +154,6 @@ def new_transactions():
 
     response = {'message': f'Transaction is added to the block {index}'}
     return jsonify(response), 200
-
 
 # lance le serveur flask localement
 app.run(host='127.0.0.1', port=5000)
