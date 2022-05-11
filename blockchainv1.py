@@ -30,7 +30,9 @@ class Blockchain:
         self.current_transactions.append({
             'amount': amount,
             'receiver': receiver,
-            'sender': sender
+            'sender': sender,
+            'hash': self.hash(self.current_transactions),
+            'timestamp': str(datetime.datetime.now())
         })
         return self.last_block['index'] + 1
 
@@ -163,5 +165,4 @@ def new_transactions():
 # lance le serveur flask localement
 app.run(host='127.0.0.1', port=5000)
 
-            
- 
+        
