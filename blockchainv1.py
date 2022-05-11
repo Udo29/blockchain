@@ -105,7 +105,7 @@ app = Flask(__name__)
  
 # crée la blockchain
 blockchain = Blockchain()
- 
+
 # mine un block et le met dans la blockchain
 @app.route('/mine_block', methods=['GET'])
 def mine_block():
