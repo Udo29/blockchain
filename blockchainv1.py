@@ -30,7 +30,9 @@ class Blockchain:
         self.current_transactions.append({
             'amount': amount,
             'receiver': receiver,
-            'sender': sender
+            'sender': sender,
+            'hash': self.hash(self.current_transactions),
+            'timestamp': str(datetime.datetime.now())
         })
         return self.last_block['index'] + 1
 
@@ -102,12 +104,6 @@ blockchain = Blockchain()
 # mine un block et le met dans la blockchain
 @app.route('/mine_block', methods=['GET'])
 def mine_block():
-
-    blockchain.add_transactions(
-        sender='0',
-        receiver='test',
-        amount=1
-    )
 
     previous_block_hash = blockchain.hash(blockchain.last_block)
     index = len(blockchain.chain)
