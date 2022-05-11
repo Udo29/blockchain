@@ -39,14 +39,14 @@ def transactions():
     for i in range(len(transactions)):
         if transactions[i]['hash'].__len__() > 16:
             transactions[i]['hash'] = transactions[i]['hash'][:8]+'...'+transactions[i]['hash'][-8:]
-    return transactions
+    return reversed(transactions)
 
 
 
 @app.route("/", methods=['GET'])
 def init():
     Blockchain = get_blockchain()
-    return render_template('index.html', chain=Blockchain, transaction=transactions())
+    return render_template('index.html', chain=Blockchain, transaction=(transactions()))
 
 @app.route("/search", methods=['POST'])
 def search():
