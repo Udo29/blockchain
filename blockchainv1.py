@@ -40,26 +40,31 @@ class Blockchain:
         hash_block = hashlib.sha256(json.dumps(block, sort_keys=True).encode('utf-8')).hexdigest()
         return hash_block
 
-    # fonction utilisé pour le proof of work et pour miner le block
-    def mining(self, index, previous_hash, transactions):
-        nonce = 0
-        while self.valid_mining(index, previous_hash, transactions, nonce) is False:
-            nonce += 1
-        return nonce
-
     # fonction qui valide le block
-    def valid_mining(self, index, previous_hash, transactions, nonce):
-        content_block = f'{index}{previous_hash}{transactions}{nonce}'.encode()
+    def valid_mining(self, index, nonce, previous_hash, transactions):
+        # calcule le hash du contenu du block
+        content_block = f'{index}{nonce}{previous_hash}{transactions}'.encode()
         hashed_block = hashlib.sha256(content_block).hexdigest()
+        # ici on check si le hash correspond a la difficulté souhaité ('00' en début de hash par exemple)
         if hashed_block[:2] == '00':
             return True
         else:
             return False
 
+    # fonction utilisé pour le proof of work et pour miner le block
+    def mining(self, index, previous_hash, transactions):
+        nonce = 0
+        # tant que le nonce du hash ne correspond pas a la difficulté souhaité on continue
+        while self.valid_mining(index, nonce, previous_hash, transactions) is False:
+            nonce += 1
+        return nonce
+
+    # getters and setters
     @property
     def last_block(self):
         return self.chain[-1]
 
+    # fonction qui valide entierement la blockchain
     def valid_blockchain(self, chain):
         previous_block = chain[0]
         block_index = 1
@@ -105,7 +110,7 @@ def mine_block():
 
     blockchain.add_transactions(
         sender='0',
-        receiver='test',
+        receiver=str(randrange(1073741824, 4294967297)),
         amount=1
     )
 
